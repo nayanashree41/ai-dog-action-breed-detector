@@ -14,7 +14,7 @@
 - ### compare Two dogs
 - ![compare Two Dogs](https://github.com/nayanashree41/ai-dog-action-breed-detector/blob/main/screenshot2.jpeg?raw=true)
 - ### Breed Detection
-- ![Breed Detection](screenshot2.jpg)
+- ![Breed Detection](https://github.com/nayanashree41/ai-dog-action-breed-detector/blob/main/screenshots1.jpeg?raw=true)
 - ### Action Detection
 - ![Action Detection](https://github.com/nayanashree41/ai-dog-action-breed-detector/blob/main/screenshopts3.jpeg?raw=true)
 - ### training progress
