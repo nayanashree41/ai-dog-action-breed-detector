@@ -16,7 +16,7 @@
 - ### Breed Detection
 - ![Breed Detection](screenshot2.jpg)
 - ### Action Detection
-- ![Action Detection](screenshots3.jpg)
+- ![Action Detection](https://github.com/nayanashree41/ai-dog-action-breed-detector/blob/main/screenshopts3.jpeg?raw=true)
 - ### training progress
 - ![Training progress](screenshots4.jpg)
 - 
