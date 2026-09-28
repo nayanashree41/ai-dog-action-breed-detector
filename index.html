@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI Dog Emotion & Breed Detector — Web</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Optional: Chart.js for the progress chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <header class="brand">
+        <h2>🐶 SEA Wonder — Dog Lab</h2>
+      </header>
+
+      <nav class="nav">
+        <button data-page="home" class="nav-btn active">🏠 Home</button>
+        <button data-page="action" class="nav-btn">🐾 Action Detector</button>
+        <button data-page="breed" class="nav-btn">🐕 Breed Identifier</button>
+        <button data-page="compare" class="nav-btn">🔍 Compare My Dog</button>
+        <button data-page="progress" class="nav-btn">📈 Progress Tracker</button>
+        <button data-page="snapshots" class="nav-btn">📸 Snapshot History</button>
+        <button data-page="routine" class="nav-btn">📅 Daily Routine Planner</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <label class="voice-toggle">
+          <input type="checkbox" id="voiceToggle" checked />
+          🔊 Voice Feedback
+        </label>
+        <small class="muted">Static demo — integrate your ML backend</small>
+      </div>
+    </aside>
+
+    <main class="content">
+      <!-- HOME -->
+      <section id="home" class="page active">
+        <h1>🐶 Welcome to AI Dog Emotion & Breed Detector!</h1>
+        <p>🌟 Detect your dog's action • Identify breed & emotion • Compare pups • Track progress & routines</p>
+      </section>
+
+      <!-- ACTION DETECTOR -->
+      <section id="action" class="page">
+        <h1>🐾 Dog Action Detector</h1>
+        <p>Upload an image of your dog to detect action (demo — placeholder).</p>
+
+        <div class="card">
+          <input type="file" accept="image/*" id="actionUpload" />
+          <div id="actionPreviewWrap" class="imgwrap hidden">
+            <img id="actionPreview" alt="Preview" />
+            <div id="actionResult" class="result">No detection yet</div>
+          </div>
+
+          <div class="controls">
+            <button id="runActionBtn" class="primary">Run Action Detection (demo)</button>
+            <small class="muted">Hook this button to your backend to return action/bbox.</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- BREED IDENTIFIER -->
+      <section id="breed" class="page">
+        <h1>🐕 Breed + Emotion Identifier</h1>
+        <p>Upload an image to identify breed and emotion (demo client-side placeholder).</p>
+
+        <div class="card two-col">
+          <div>
+            <input type="file" accept="image/*" id="breedUpload" />
+            <div id="breedPreviewWrap" class="imgwrap hidden">
+              <img id="breedPreview" alt="Breed preview" />
+            </div>
+          </div>
+
+          <div class="info">
+            <div id="breedResult" class="result">Breed: — <br/> Emotion: —</div>
+            <button id="runBreedBtn" class="primary">Identify Breed (demo)</button>
+            <small class="muted">Replace demo logic with model call (e.g. fetch to /predict_breed).</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMPARE -->
+      <section id="compare" class="page">
+        <h1>🔍 Compare Two Dogs</h1>
+        <p>Upload two images and compute similarity (demo cosine-sim placeholder).</p>
+
+        <div class="card two-col">
+          <div>
+            <label>Dog 1</label>
+            <input type="file" accept="image/*" id="compare1" />
+            <div id="compare1Wrap" class="imgwrap hidden"><img id="compare1Img" /></div>
+          </div>
+          <div>
+            <label>Dog 2</label>
+            <input type="file" accept="image/*" id="compare2" />
+            <div id="compare2Wrap" class="imgwrap hidden"><img id="compare2Img" /></div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="runCompareBtn" class="primary">Compare Dogs (demo)</button>
+          <div id="compareResult" class="result">Similarity: —</div>
+        </div>
+      </section>
+
+      <!-- PROGRESS TRACKER -->
+      <section id="progress" class="page">
+        <h1>📈 Training Progress Tracker</h1>
+        <p>Shows counts of detections. Demo chart below (client-side sample).</p>
+
+        <div class="card">
+          <canvas id="progressChart" width="600" height="300"></canvas>
+          <div class="controls">
+            <button id="resetProgress" class="secondary">Reset demo progress</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SNAPSHOT HISTORY -->
+      <section id="snapshots" class="page">
+        <h1>📸 Snapshot History</h1>
+        <p>Saved snapshots will appear here (demo stored in-memory per session).</p>
+        <div id="snapshotGrid" class="grid"></div>
+      </section>
+
+      <!-- DAILY ROUTINE PLANNER -->
+      <section id="routine" class="page">
+        <h1>📅 Dog Routine Planner</h1>
+        <form id="routineForm" class="card">
+          <label>Feeding Time <input type="time" id="feeding" /></label>
+          <label>Walking Time <input type="time" id="walking" /></label>
+          <label>Training Time <input type="time" id="training" /></label>
+          <label>Bedtime <input type="time" id="bedtime" /></label>
+
+          <div class="controls">
+            <button type="submit" class="primary">💾 Save Routine</button>
+            <button type="button" id="clearRoutine" class="secondary">Clear</button>
+          </div>
+
+          <div id="savedRoutine" class="result">No routine saved yet.</div>
+        </form>
+      </section>
+
+      <footer class="footer">
+        <small>Static frontend demo — integrate your model endpoints (YOLOv5, ResNet) to make it functional.</small>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // ---- Simple page navigation ----
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const pages = document.querySelectorAll('.page');
+    navBtns.forEach(b => b.addEventListener('click', () => {
+      navBtns.forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      const target = b.getAttribute('data-page');
+      pages.forEach(p => p.classList.toggle('active', p.id === target));
+      window.scrollTo({top:0,behavior:'smooth'});
+    }));
+
+    // ---- Image previews ----
+    function previewFile(inputEl, imgEl, wrapEl) {
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        imgEl.src = e.target.result;
+        wrapEl.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Action detector demo
+    const actionUpload = document.getElementById('actionUpload');
+    const actionPreview = document.getElementById('actionPreview');
+    const actionPreviewWrap = document.getElementById('actionPreviewWrap');
+    const actionResult = document.getElementById('actionResult');
+    document.getElementById('runActionBtn').addEventListener('click', () => {
+      if (!actionUpload.files.length) { alert('Please upload an image.'); return; }
+      // DEMO: random action pick. Replace with fetch(...) to your backend.
+      const actions = ['Sitting','Standing','Lying Down','Playing'];
+      const pick = actions[Math.floor(Math.random()*actions.length)];
+      actionResult.textContent = `🐾 Action Detected: ${pick}`;
+      // add snapshot to history (demo)
+      addSnapshot(actionPreview.src);
+    });
+    actionUpload.addEventListener('change', () => previewFile(actionUpload, actionPreview, actionPreviewWrap));
+
+    // Breed demo
+    const breedUpload = document.getElementById('breedUpload');
+    const breedPreview = document.getElementById('breedPreview');
+    const breedPreviewWrap = document.getElementById('breedPreviewWrap');
+    const breedResult = document.getElementById('breedResult');
+    document.getElementById('runBreedBtn').addEventListener('click', () => {
+      if (!breedUpload.files.length) { alert('Please upload an image.'); return; }
+      // DEMO: fake breed + emotion
+      const breeds = ['Labrador Retriever','Beagle','German Shepherd','Golden Retriever','Pug'];
+      const emotions = ['happy and playful','calm and relaxed','alert and focused','tired or resting'];
+      const b = breeds[Math.floor(Math.random()*breeds.length)];
+      const e = emotions[Math.floor(Math.random()*emotions.length)];
+      breedResult.innerHTML = `<strong>Breed:</strong> ${b} <br/><strong>Emotion:</strong> ${e}`;
+      addSnapshot(breedPreview.src);
+    });
+    breedUpload.addEventListener('change', () => previewFile(breedUpload, breedPreview, breedPreviewWrap));
+
+    // Compare demo
+    const c1 = document.getElementById('compare1'), c2 = document.getElementById('compare2');
+    const c1Img = document.getElementById('compare1Img'), c2Img = document.getElementById('compare2Img');
+    const c1Wrap = document.getElementById('compare1Wrap'), c2Wrap = document.getElementById('compare2Wrap');
+    document.getElementById('runCompareBtn').addEventListener('click', () => {
+      if (!c1.files.length || !c2.files.length) { alert('Please upload both images.'); return; }
+      // DEMO: pseudo similarity value
+      const sim = (Math.random()*50 + 50).toFixed(2);
+      document.getElementById('compareResult').textContent = `🧬 Breed Similarity: ${sim}%`;
+    });
+    c1.addEventListener('change', () => previewFile(c1, c1Img, c1Wrap));
+    c2.addEventListener('change', () => previewFile(c2, c2Img, c2Wrap));
+
+    // Progress chart demo
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    let demoData = {labels:['Sitting','Standing','Lying Down','Playing'], counts: [2,5,1,4]};
+    let chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: demoData.labels,
+        datasets: [{ label: 'Detections Count', data: demoData.counts }]
+      },
+      options: { responsive:true, maintainAspectRatio:false }
+    });
+    document.getElementById('resetProgress').addEventListener('click', () => {
+      demoData.counts = [0,0,0,0];
+      chart.data.datasets[0].data = demoData.counts;
+      chart.update();
+    });
+
+    // Snapshot history (in-memory)
+    const snapshotGrid = document.getElementById('snapshotGrid');
+    const snapshots = [];
+    function addSnapshot(dataUrl) {
+      if (!dataUrl) return;
+      snapshots.push(dataUrl);
+      renderSnapshots();
+    }
+    function renderSnapshots() {
+      snapshotGrid.innerHTML = '';
+      snapshots.forEach((s, i) => {
+        const img = document.createElement('img');
+        img.src = s;
+        img.alt = `Snapshot ${i+1}`;
+        img.className = 'snap';
+        snapshotGrid.appendChild(img);
+      });
+    }
+
+    // Routine form
+    const routineForm = document.getElementById('routineForm');
+    const savedRoutine = document.getElementById('savedRoutine');
+    routineForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = {
+        Feeding: document.getElementById('feeding').value || '—',
+        Walking: document.getElementById('walking').value || '—',
+        Training: document.getElementById('training').value || '—',
+        Bedtime: document.getElementById('bedtime').value || '—'
+      };
+      savedRoutine.textContent = `Saved Routine: Feeding ${data.Feeding} • Walking ${data.Walking} • Training ${data.Training} • Bedtime ${data.Bedtime}`;
+      // Optionally store to localStorage
+      localStorage.setItem('dogRoutine', JSON.stringify(data));
+      alert('Routine saved (demo). Hook this to persist on server or calendar.');
+    });
+    document.getElementById('clearRoutine').addEventListener('click', () => {
+      localStorage.removeItem('dogRoutine');
+      savedRoutine.textContent = 'No routine saved yet.';
+      routineForm.reset();
+    });
+
+    // Load stored routine on startup
+    (function loadRoutine() {
+      const r = localStorage.getItem('dogRoutine');
+      if (!r) return;
+      const data = JSON.parse(r);
+      document.getElementById('feeding').value = data.Feeding;
+      document.getElementById('walking').value = data.Walking;
+      document.getElementById('training').value = data.Training;
+      document.getElementById('bedtime').value = data.Bedtime;
+      savedRoutine.textContent = `Saved Routine: Feeding ${data.Feeding} • Walking ${data.Walking} • Training ${data.Training} • Bedtime ${data.Bedtime}`;
+    })();
+
+  </script>
+</body>
+</html>
